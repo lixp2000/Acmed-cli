@@ -1,0 +1,30 @@
+{
+  "name": "acmed-cli",
+  "version": "0.0.2",
+  "description": "极致医疗后台管理系统模板",
+  "bin": {
+    "acmed": "bin/acmed",
+    "acmed-create": "bin/acmed-create"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lixp2000/Acmed-cli.git"
+  },
+  "keywords": [
+    "vue",
+    "cli"
+  ],
+  "author": "Barry_li (lixp2080@163.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lixp2000/Acmed-cli/issues"
+  },
+  "homepage": "https://github.com/lixp2000/Acmed-cli#readme",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "commander": "^2.20.0",
+    "download-git-repo": "^2.0.0",
+    "inquirer": "^6.3.1",
+    "ora": "^3.4.0"
+  }
+}
