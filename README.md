@@ -4,7 +4,7 @@
 ### Quick Start
 
 ```bash
-$ npm install -g acmed
+$ npm install -g acmed-cli
 ```
 
 ```bash
