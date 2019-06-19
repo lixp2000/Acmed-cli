@@ -1,6 +1,6 @@
 {
   "name": "acmed-cli",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "极致医疗后台管理系统模板",
   "bin": {
     "acmed": "bin/acmed",
