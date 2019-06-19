@@ -8,5 +8,5 @@ $ npm install -g acmed-cli
 ```
 
 ```bash
-$ acmed create template-name my-project
+$ acmed create webpack my-project
 ```
