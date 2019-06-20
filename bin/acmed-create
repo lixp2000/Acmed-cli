@@ -4,55 +4,96 @@
  * created: 2019-06-19
  */
 
-const program = require('commander')
-const chalk = require('chalk')
-const ora = require('ora')
-const download = require('download-git-repo')
-const tplObj = require(`${__dirname}/../template`)
+const fs = require("fs-extra");
+const path = require("path");
+const program = require("commander");
+const chalk = require("chalk");
+const ora = require("ora");
+const download = require("download-git-repo");
+const validateProjectName = require("validate-npm-package-name");
+const tplObj = require(`${__dirname}/../template`);
 
-program
-  .usage('<template-name> [project-name]')
+program.usage("<template-name> [project-name]");
 
-program.parse(process.argv)
+program.parse(process.argv);
 // 当没有输入参数的时候给个提示
-if (program.args.length < 1) return program.help()
+if (program.args.length < 1) return program.help();
 
 // 好比 vue init webpack project-name 的命令一样，第一个参数是 webpack，第二个参数是 project-name
-let templateName = program.args[0]
-let projectName = program.args[1]
+let templateName = program.args[0];
+let projectName = program.args[1];
 
 if (!tplObj[templateName]) {
-  console.log(chalk.red('\n Template does not exit! \n '))
-  return
+  console.log(chalk.red("\n Template does not exit! \n "));
+  return;
 }
 if (!projectName) {
-  console.log(chalk.red('\n Project should not be empty! \n '))
-  return
+  console.log(chalk.red("\n Project should not be empty! \n "));
+  return;
 }
 
-url = tplObj[templateName]
+// 判断所取得项目名称是否符合规范
+const result = validateProjectName(projectName);
+if (!result.validForNewPackages) {
+  console.error(
+    chalk.red(`\n Invalid project name: "${chalk.cyan(projectName)}"`)
+  );
+  result.errors &&
+    result.errors.forEach(err => {
+      console.error(chalk.red.dim(`\n Error: ${err}`));
+    });
+  result.warnings &&
+    result.warnings.forEach(warn => {
+      console.error(chalk.red.dim(`\n  Warning: ${warn}`));
+    });
+  process.exit(1);
+}
 
-console.log(chalk.white('\n Start generating... \n'))
+const cwd = process.cwd();
+const targetDir = path.resolve(cwd, projectName);
+
+if (fs.existsSync(targetDir)) {
+  console.log(
+    chalk.white(
+      `\n Target directory ${chalk.cyan(targetDir)} already exists \n`
+    )
+  );
+  return;
+}
+
+url = tplObj[templateName];
+
+console.log(chalk.white("\n Start generating... \n"));
 
 // 出现加载图标
 const spinner = ora("Downloading...");
 spinner.start();
 
 // 执行下载方法并传入参数
-download(
-  url,
-  projectName,
-  err => {
-    if (err) {
-      spinner.fail();
-      console.log(chalk.red(`Generation failed. ${err}`))
-      return
-    }
-
-    spinner.succeed();
-    console.log(chalk.green('\n Generation completed!'))
-    console.log('\n To get started')
-    console.log(`\n    cd ${projectName} \n`)
-    console.log(`\n    yarn install \n`)
+download(url, projectName, err => {
+  if (err) {
+    spinner.fail();
+    console.log(chalk.red(`Generation failed. ${err}`));
+    return;
   }
-)
+
+  spinner.succeed();
+
+  // let targetFile = path.resolve(targetDir, "package.json");
+  // fs.readFileSync(targetFile, (err, data) => {
+  //   if (err) {
+  //     console.log(`Generation failed. ${err}`);
+  //     fs.remove(targetDir);
+  //     process.exit(1);
+  //   }
+  //   // console.log('11111111111')
+  //   console.log(data)
+  //   // file.toString().relpace('name', projectName)
+  //   // fs.writeFileSync(targetFile, file)
+  // });
+
+  console.log(chalk.green("\n Generation completed!"));
+  console.log("\n To get started");
+  console.log(`\n    cd ${projectName}`);
+  console.log(`\n    yarn install || npm install \n`);
+});
