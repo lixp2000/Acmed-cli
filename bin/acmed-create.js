@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Author: Barry_li
- * created: 2019-06-19
+ * created: 2019-12-06
  */
 
 const fs = require("fs-extra");
@@ -11,9 +11,8 @@ const chalk = require("chalk");
 const ora = require("ora");
 const download = require("download-git-repo");
 const validateProjectName = require("validate-npm-package-name");
+// const vfs = require('vinyl-fs');
 const tplObj = require(`${__dirname}/../template`);
-
-program.usage("<template-name> [project-name]");
 
 program.parse(process.argv);
 // 当没有输入参数的时候给个提示
@@ -49,8 +48,12 @@ if (!result.validForNewPackages) {
   process.exit(1);
 }
 
+const url = tplObj[templateName];
+
+// 检测当前文件夹下是否有相同的文件夹
 const cwd = process.cwd();
 const targetDir = path.resolve(cwd, projectName);
+const appDir = path.join(cwd, `./${projectName}`)
 
 if (fs.existsSync(targetDir)) {
   console.log(
@@ -61,14 +64,10 @@ if (fs.existsSync(targetDir)) {
   return;
 }
 
-url = tplObj[templateName];
-
-console.log(chalk.white("\n Start generating... \n"));
-
-// 出现加载图标
-const spinner = ora("Downloading...");
-spinner.start();
-
+//下载模板 选择模板
+//通过配置文件，获取模板信息
+const spinner = ora('downloading template...')
+spinner.start()
 // 执行下载方法并传入参数
 download(url, projectName, err => {
   if (err) {
@@ -76,24 +75,17 @@ download(url, projectName, err => {
     console.log(chalk.red(`Generation failed. ${err}`));
     return;
   }
-
   spinner.succeed();
-
-  // let targetFile = path.resolve(targetDir, "package.json");
-  // fs.readFileSync(targetFile, (err, data) => {
-  //   if (err) {
-  //     console.log(`Generation failed. ${err}`);
-  //     fs.remove(targetDir);
-  //     process.exit(1);
-  //   }
-  //   // console.log('11111111111')
-  //   console.log(data)
-  //   // file.toString().relpace('name', projectName)
-  //   // fs.writeFileSync(targetFile, file)
-  // });
-
-  console.log(chalk.green("\n Generation completed!"));
+  const app = path.basename(appDir);
+  // 修改package中nane的名称
+  const configPath = `${appDir}/package.json`;
+  const configFile = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  configFile.name = `${projectName}`;
+  fs.writeFileSync(configPath, JSON.stringify(configFile, null, 2));
+  console.log(chalk.green(`\n Success! Created ${app} project complete!`));
   console.log("\n To get started");
-  console.log(`\n    cd ${projectName}`);
-  console.log(`\n    yarn install || npm install \n`);
-});
+  console.log(`\n    cd ${app}`);
+  console.log(`\n    yarn install \n`);
+  console.log(`\n    yarn serve \n`);
+  process.exit();
+})
